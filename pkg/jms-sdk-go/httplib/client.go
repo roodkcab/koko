@@ -246,12 +246,12 @@ func (c *Client) CacheGet(reqUrl string, res interface{}, params ...map[string]s
 }
 
 func (c *Client) Get(reqUrl string, res interface{}, params ...map[string]string) (resp *http.Response, err error) {
-	logger.Debugf("req without cache:", reqUrl)
-	resp, err = c.Do("GET", reqUrl, nil, res, params...)
-	return resp, err
+	logger.Debugf("get without cache:", reqUrl)
+	return c.Do("GET", reqUrl, nil, res, params...)
 }
 
 func (c *Client) Post(reqUrl string, data interface{}, res interface{}, params ...map[string]string) (resp *http.Response, err error) {
+	logger.Debugf("post without cache:", reqUrl)
 	return c.Do("POST", reqUrl, data, res, params...)
 }
 

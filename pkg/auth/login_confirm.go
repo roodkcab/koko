@@ -41,22 +41,22 @@ type LoginConfirmService struct {
 func (c *LoginConfirmService) CheckIsNeedLoginConfirm() (bool, error) {
 	userID := c.option.user.ID
 	systemUserID := c.option.systemUser.ID
-	systemUsername := c.option.systemUser.Username
+	//systemUsername := c.option.systemUser.Username
 	targetID := c.option.targetID
 	switch c.option.targetType {
 	case model.AppType:
 		return c.jmsService.CheckIfNeedAppConnectionConfirm(userID, targetID, systemUserID)
 	default:
-		res, err := c.jmsService.CheckIfNeedAssetLoginConfirm(userID, targetID,
+		/*res, err := c.jmsService.CheckIfNeedAssetLoginConfirm(userID, targetID,
 			systemUserID, systemUsername)
 		if err != nil {
 			return false, err
-		}
-		c.reviewers = res.Reviewers
-		c.checkReqInfo = res.CheckConfirmStatus
-		c.cancelReqInfo = res.CloseConfirm
-		c.ticketDetailUrl = res.TicketDetailUrl
-		return res.NeedConfirm, nil
+		}*/
+		c.reviewers = nil
+		c.checkReqInfo = service.RequestInfo{}
+		c.cancelReqInfo = service.RequestInfo{}
+		c.ticketDetailUrl = ""
+		return false, nil
 	}
 }
 
