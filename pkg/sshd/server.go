@@ -2,6 +2,7 @@ package sshd
 
 import (
 	"context"
+	"encoding/gob"
 	"net"
 	"strconv"
 	"time"
@@ -30,6 +31,7 @@ func (s *Server) Start() {
 		logger.Fatal(err)
 	}
 	proxyListener := &proxyproto.Listener{Listener: ln}
+	gob.Register([]map[string]string{})
 	logger.Fatal(s.Srv.Serve(proxyListener))
 }
 
@@ -73,7 +75,7 @@ func NewSSHServer(handler SSHHandler) *Server {
 			return ssh.AuthResult(handler.PasswordAuth(ctx, password))
 		},
 		PublicKeyHandler: func(ctx ssh.Context, key ssh.PublicKey) ssh.AuthResult {
-			return ssh.AuthResult(handler.PublicKeyAuth(ctx, key))
+			return ssh.AuthResult(AuthFailed)
 		},
 		NextAuthMethodsHandler: func(ctx ssh.Context) []string {
 			return handler.NextAuthMethodsHandler(ctx)

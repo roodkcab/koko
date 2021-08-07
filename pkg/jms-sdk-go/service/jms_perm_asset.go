@@ -14,7 +14,7 @@ func (s *JMService) SearchPermAsset(userId, key string) (res model.AssetList, er
 
 func (s *JMService) GetSystemUsersByUserIdAndAssetId(userId, assetId string) (sysUsers []model.SystemUser, err error) {
 	Url := fmt.Sprintf(UserPermsAssetSystemUsersURL, userId, assetId)
-	_, err = s.authClient.Get(Url, &sysUsers)
+	_, err = s.authClient.CacheGet(Url, &sysUsers)
 	return
 }
 

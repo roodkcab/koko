@@ -10,7 +10,7 @@ func (s *JMService) GetPermission(userId, assetId, systemUserId string) (perms m
 		"asset_id":       assetId,
 		"system_user_id": systemUserId,
 	}
-	_, err = s.authClient.Get(PermissionURL, &perms, params)
+	_, err = s.authClient.CacheGet(PermissionURL, &perms, params)
 	return
 }
 
@@ -24,7 +24,7 @@ func (s *JMService) ValidateApplicationPermission(userId, appId, systemUserId st
 		"application_id": appId,
 		"system_user_id": systemUserId,
 	}
-	_, err = s.authClient.Get(ValidateApplicationPermissionURL, &info, params)
+	_, err = s.authClient.CacheGet(ValidateApplicationPermissionURL, &info, params)
 	return
 }
 
@@ -37,7 +37,7 @@ func (s *JMService) ValidateAssetConnectPermission(userId, assetId, systemUserId
 		"system_user_id": systemUserId,
 		"action_name":    actionConnect,
 	}
-	_, err = s.authClient.Get(ValidateUserAssetPermissionURL, &info, params)
+	_, err = s.authClient.CacheGet(ValidateUserAssetPermissionURL, &info, params)
 	return
 }
 

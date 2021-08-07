@@ -56,7 +56,7 @@ func (s *JMService) getPaginationResult(reqUrl string, param model.PaginationPar
 	}
 	paramsArray = append(paramsArray, params)
 	if param.PageSize > 0 {
-		_, err = s.authClient.Get(reqUrl, &resp, paramsArray...)
+		_, err = s.authClient.CacheGet(reqUrl, &resp, paramsArray...)
 	} else {
 		var data []map[string]interface{}
 		_, err = s.authClient.Get(reqUrl, &data, paramsArray...)

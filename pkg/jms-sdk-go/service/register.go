@@ -40,7 +40,7 @@ func ValidAccessKey(coreHost string, key model.AccessKey) error {
 		res  *http.Response
 	)
 
-	res, err = client.Get(UserProfileURL, &user)
+	res, err = client.CacheGet(UserProfileURL, &user)
 	if err != nil {
 		if res == nil {
 			return fmt.Errorf("%w:%s", ErrConnect, err.Error())

@@ -3,15 +3,20 @@ package httplib
 import (
 	"bufio"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/jumpserver/koko/pkg/cache"
+	"github.com/jumpserver/koko/pkg/logger"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -21,12 +26,19 @@ type AuthSign interface {
 }
 
 const miniTimeout = time.Second * 30
+var _cache *cache.Cache
 
 func NewClient(baseUrl string, timeout time.Duration) (*Client, error) {
 	_, err := url.Parse(baseUrl)
 	if err != nil {
 		return nil, err
 	}
+
+	_cache, err = cache.Init()
+	if err != nil {
+		return nil, err
+	}
+
 	if timeout < miniTimeout {
 		timeout = miniTimeout
 	}
@@ -38,6 +50,7 @@ func NewClient(baseUrl string, timeout time.Duration) (*Client, error) {
 		Timeout: timeout,
 		Jar:     jar,
 	}
+
 	return &Client{
 		Timeout: timeout,
 		baseUrl: baseUrl,
@@ -189,8 +202,53 @@ func (c *Client) Do(method, reqUrl string, data, res interface{}, params ...map[
 	return
 }
 
+func MD5(bytes []byte) string {
+	hasher := md5.New()
+	hasher.Write(bytes)
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (c *Client) CacheGet(reqUrl string, res interface{}, params ...map[string]string) (resp *http.Response, err error) {
+	rawKey := map[string]interface{}{"url": reqUrl}
+	if params != nil {
+		rawKey["params"] = params
+	}
+	jsonKey, _ := json.Marshal(rawKey)
+	key := MD5(jsonKey)
+	cacheResp, err := _cache.Get(key)
+	if cacheResp == nil || reflect.ValueOf(cacheResp).IsNil() {
+		logger.Debugf("req with cache:", key, jsonKey, reqUrl)
+		resp, err = c.Do("GET", reqUrl, nil, res, params...)
+		rawBytes, err := json.Marshal(res)
+		if err == nil {
+			_cache.Set(key, rawBytes, 86400 * 7)
+		}
+		return resp, err
+	} else {
+		json.Unmarshal(cacheResp, &res)
+	}
+	return &http.Response{
+		Status:           "200 OK",
+		StatusCode:       200,
+		Proto:            "HTTP/1.1",
+		ProtoMajor:       1,
+		ProtoMinor:       1,
+		Header:           nil,
+		Body:             ioutil.NopCloser(bytes.NewReader(cacheResp)),
+		ContentLength:    0,
+		TransferEncoding: nil,
+		Close:            false,
+		Uncompressed:     false,
+		Trailer:          nil,
+		Request:          nil,
+		TLS:              nil,
+	}, nil
+}
+
 func (c *Client) Get(reqUrl string, res interface{}, params ...map[string]string) (resp *http.Response, err error) {
-	return c.Do("GET", reqUrl, nil, res, params...)
+	logger.Debugf("req without cache:", reqUrl)
+	resp, err = c.Do("GET", reqUrl, nil, res, params...)
+	return resp, err
 }
 
 func (c *Client) Post(reqUrl string, data interface{}, res interface{}, params ...map[string]string) (resp *http.Response, err error) {

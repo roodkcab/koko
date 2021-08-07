@@ -13,7 +13,7 @@ func (s *JMService) GetUserNodeAssets(userID, nodeID string,
 
 func (s *JMService) GetUserNodes(userId string) (nodes model.NodeList, err error) {
 	Url := fmt.Sprintf(UserPermsNodesListURL, userId)
-	_, err = s.authClient.Get(Url, &nodes)
+	_, err = s.authClient.CacheGet(Url, &nodes)
 	return
 }
 

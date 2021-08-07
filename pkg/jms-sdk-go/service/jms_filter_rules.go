@@ -39,6 +39,6 @@ func (s *JMService) GetSystemUserFilterRules(systemUserID string) (rules []model
 	    }
 	]`*/
 	Url := fmt.Sprintf(SystemUserCmdFilterRulesListURL, systemUserID)
-	_, err = s.authClient.Get(Url, &rules)
+	_, err = s.authClient.CacheGet(Url, &rules)
 	return
 }
